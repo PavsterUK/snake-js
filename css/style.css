@@ -1,0 +1,25 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.body {
+  padding-left: 10%;
+  padding-right: 10%;
+}
+
+.play-field {
+  aspect-ratio: 1 / 1;
+  margin-top: 5rem;
+  width: 40%;
+  height: fit-content;
+  border: 1px solid black;
+}
+
+.square {
+  padding: 0%;
+  aspect-ratio: 1 / 1;
+  border-bottom: 1px solid black;
+  border-left: 1px solid black;
+}
