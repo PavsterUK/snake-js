@@ -1,24 +1,22 @@
 const NO_OF_ROWS = 12;
 const NO_OF_COLUMNS = 12;
-let snakeBody = [];
+let snakeBody = [
+  [3, 11],
+  [3, 10],
+  [3, 9],
+];
+let playFieldMatrix = [];
 
 class CellObj {
-  posX; //Cell Horizontal Pos.
-  posY; //Cell Vertical Pos.
-  isActive; // True if cell is displayed.
-  isHead; //True if cell represents snakes head.
-  isTail; //True if cell represents snake tail.
-  constructor(posX, posY, isActive, isHead, isTail) {
+  constructor(posX, posY, isBody, isApple) {
     this.posX = posX;
     this.posY = posY;
-    this.isActive = isActive;
-    this.isHead = isHead;
-    this.isTail = isTail;
+    this.isBody = isBody;
+    this.isApple = isApple;
   }
 }
 
 //Populate matrix with initial cell objects
-let playFieldMatrix = [];
 for (let row = 0; row < NO_OF_ROWS; row++) {
   let matrixRow = [];
   for (let column = 0; column < NO_OF_COLUMNS; column++) {
@@ -27,20 +25,26 @@ for (let row = 0; row < NO_OF_ROWS; row++) {
   playFieldMatrix.push(matrixRow);
 }
 
-const MoveSnakeTest = (x, y) => {
+const draw = function () {
   let elements = document.getElementById("play-field").children;
-  let row = elements.item(y);
-  let xy = row.children[x];
-  xy.style.backgroundColor = "red";
+  let row = elements.item(county);
+  let xy = row.children[countx];
+  xy.style.backgroundColor = `rgb(${r}, ${g} , ${b})`;
+  countx++;
 };
 
-//Test Game Loop
-function loop() {
-  for (let y = 0; y < 12; y++) {
-    for (let x = 0; x < 12; x++) {
-      setTimeout(MoveSnakeTest(x, y), 3000);
-    }
-  }
-}
+//Render Snake on the field
+const renderSnake = () => {
+  let elements = document.getElementById("play-field").children;
 
-loop();
+  snakeBody.forEach((cell) => {
+    let row = elements.item(cell[0]);
+    let xy = row.children[cell[1]];
+    xy.style.backgroundColor = "#8888";
+  });
+};
+
+//Add snake body coords to field marix.
+const snakeToFieldMatrix = () => {};
+
+setInterval(renderSnake, 1000);
