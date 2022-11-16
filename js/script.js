@@ -1,16 +1,16 @@
 const NO_OF_ROWS = 12;
 const NO_OF_COLUMNS = 12;
-let snakeBody = [
-  [3, 11],
-  [3, 10],
-  [3, 9],
+let snakePos = [
+  [5, 8],
+  [5, 9],
+  [5, 10],
+  [5, 11]
 ];
+let prevSnakePos = [];
 let playFieldMatrix = [];
 
 class CellObj {
-  constructor(posX, posY, isBody, isApple) {
-    this.posX = posX;
-    this.posY = posY;
+  constructor(isBody, isApple) {
     this.isBody = isBody;
     this.isApple = isApple;
   }
@@ -25,26 +25,48 @@ for (let row = 0; row < NO_OF_ROWS; row++) {
   playFieldMatrix.push(matrixRow);
 }
 
-const draw = function () {
+const changeSquareColor = (posY, posX, color) => {
   let elements = document.getElementById("play-field").children;
-  let row = elements.item(county);
-  let xy = row.children[countx];
-  xy.style.backgroundColor = `rgb(${r}, ${g} , ${b})`;
-  countx++;
+  let x = elements.item(posX);
+  let xy = x.children[posY];
+  xy.style.backgroundColor = color;
 };
 
 //Render Snake on the field
 const renderSnake = () => {
-  let elements = document.getElementById("play-field").children;
+  snakePos.forEach((cell) => {
+    changeSquareColor(cell[1], cell[0], "#8888");
+  });
+  moveSnakeLeft();
+  updateSnakePos();
+};
 
-  snakeBody.forEach((cell) => {
-    let row = elements.item(cell[0]);
-    let xy = row.children[cell[1]];
-    xy.style.backgroundColor = "#8888";
+//Update body coords on field marix.
+const updateSnakePos = () => {
+  //Compare arrays to find what cells will remain in new snake position.
+  for (let i = 0; i < snakePos.length; i++) {
+    for (let k = 0; k < prevSnakePos.length; k++) {
+      if (JSON.stringify(snakePos[i]) === JSON.stringify(prevSnakePos[k])) {
+        prevSnakePos.splice(k, 1);
+      }
+    }
+    let y = snakePos[i][0];
+    let x = snakePos[i][1];
+    playFieldMatrix[y][x].isBody = true;
+  }
+  //Remove unused cell from previous snake position.
+  prevSnakePos.forEach((cell) => {
+    let y = cell[0];
+    let x = cell[1];
+    playFieldMatrix[y][x].isBody = false;
   });
 };
 
-//Add snake body coords to field marix.
-const snakeToFieldMatrix = () => {};
+const moveSnakeLeft = () => {
+  snakePos.unshift([snakePos[0][0], snakePos[0][1] - 1]); //Move first item (head) one cell to the left.
+  let lastSnakeCell = snakePos.at(-1);
+  changeSquareColor(lastSnakeCell[1], lastSnakeCell[0], "#DAA520"); //Pain vacated square back to orange.
+  snakePos.pop(); //Removel last element from array.
+};
 
 setInterval(renderSnake, 1000);
