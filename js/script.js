@@ -1,19 +1,26 @@
 const NO_OF_ROWS = 12;
 const NO_OF_COLUMNS = 12;
 let snakePos = [
+  [5, 6],
+  [5, 7],
   [5, 8],
-  [5, 9],
-  [5, 10],
-  [5, 11]
 ];
 let prevSnakePos = [];
 let playFieldMatrix = [];
 
 class CellObj {
-  constructor(isBody, isApple) {
-    this.isBody = isBody;
+  constructor(isSnake, isApple) {
+    this.isSnake = isSnake;
     this.isApple = isApple;
   }
+}
+
+const playArea = document.querySelector("body");
+
+playArea.addEventListener("keydown", arrowPressEventHandler);
+
+function arrowPressEventHandler(e) {
+  runDirection(e.code);
 }
 
 //Populate matrix with initial cell objects
@@ -34,14 +41,10 @@ const changeSquareColor = (posY, posX, color) => {
 
 //Render Snake on the field
 const renderSnake = () => {
-  snakePos.forEach((cell) => {
-    changeSquareColor(cell[1], cell[0], "#8888");
-  });
-  moveSnakeLeft();
-  updateSnakePos();
+  runDirection();
 };
 
-//Update body coords on field marix.
+//Update snake body coords on the field marix.
 const updateSnakePos = () => {
   //Compare arrays to find what cells will remain in new snake position.
   for (let i = 0; i < snakePos.length; i++) {
@@ -52,21 +55,40 @@ const updateSnakePos = () => {
     }
     let y = snakePos[i][0];
     let x = snakePos[i][1];
-    playFieldMatrix[y][x].isBody = true;
+    playFieldMatrix[y][x].isSnake = true;
   }
   //Remove unused cell from previous snake position.
   prevSnakePos.forEach((cell) => {
     let y = cell[0];
     let x = cell[1];
-    playFieldMatrix[y][x].isBody = false;
+    playFieldMatrix[y][x].isSnake = false;
   });
 };
 
-const moveSnakeLeft = () => {
-  snakePos.unshift([snakePos[0][0], snakePos[0][1] - 1]); //Move first item (head) one cell to the left.
+//
+let prevDirection = "ArrowLeft";
+const runDirection = (runDirection) => {
+  let headXpos = snakePos[0][1];
+  let headYpos = snakePos[0][0];
+
+  if (!runDirection) {
+    runDirection = prevDirection;
+  }
+
+  if (runDirection === "ArrowUp") headYpos -= 1;
+  if (runDirection === "ArrowDown") headYpos += 1;
+  if (runDirection === "ArrowLeft") headXpos -= 1;
+  if (runDirection === "ArrowRight") headXpos += 1;
+
+  snakePos.unshift([headYpos, headXpos]); //Move first item (head) one cell to the left.
   let lastSnakeCell = snakePos.at(-1);
-  changeSquareColor(lastSnakeCell[1], lastSnakeCell[0], "#DAA520"); //Pain vacated square back to orange.
-  snakePos.pop(); //Removel last element from array.
+  snakePos.pop(); //Remove last element from array.
+  updateSnakePos();
+  changeSquareColor(lastSnakeCell[1], lastSnakeCell[0], "#DAA520"); //Paint vacated square back to orange.
+  snakePos.forEach((cell) => {
+    changeSquareColor(cell[1], cell[0], "#8888");
+  });
+  prevDirection = runDirection;
 };
 
 setInterval(renderSnake, 1000);
