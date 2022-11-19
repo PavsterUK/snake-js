@@ -1,6 +1,11 @@
 const NO_OF_ROWS = 12;
 const NO_OF_COLUMNS = 12;
 const playArea = document.querySelector("body");
+let snakePos = [
+  [5, 6],
+  [5, 7],
+];
+let applePos = [];
 
 playArea.addEventListener("keydown", arrowPressEventHandler);
 
@@ -16,7 +21,7 @@ const colorSquare = (posY, posX, color) => {
   xy.style.backgroundColor = color;
 };
 
-let applePos = [];
+
 const createApple = () => {
   if (applePos.length > 0) return;
   appleX = Math.floor(Math.random() * NO_OF_COLUMNS);
@@ -29,10 +34,6 @@ const renderApple = () => {
   colorSquare(applePos[1], applePos[0], "green");
 };
 
-let snakePos = [
-  [5, 6],
-  [5, 7],
-];
 
 let currentDirection = "ArrowLeft"; //Initial and current snake run direction.
 
@@ -65,14 +66,14 @@ const renderSnake = (runDirection) => {
   snakePos.forEach((square) => {
     colorSquare(square[1], square[0], "#8888");
   });
-  checkIfAppleEaten();
+  isAppleEaten();
 };
 
-const checkIfAppleEaten = () => {
+const isAppleEaten = () => {
   let snakeHead = snakePos[0];
-  console.log(JSON.stringify(snakeHead) + " " + JSON.stringify(applePos));
   if (JSON.stringify(snakeHead) === JSON.stringify(applePos)) {
     applePos = []; //Empty aplle array.
+    snakePos.push(snakeHead); // Add one link to sneak.
   }
 };
 
@@ -82,4 +83,4 @@ const run = () => {
   renderSnake();
 };
 
-setInterval(run, 1000 / 10);
+setInterval(run, 1000 / 1);
