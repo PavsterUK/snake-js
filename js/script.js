@@ -1,18 +1,12 @@
 const NO_OF_ROWS = 12;
 const NO_OF_COLUMNS = 12;
-const playArea = document.querySelector("body");
-let snakePos = [
-  [5, 6],
-  [5, 7],
-];
+let snakePos = [];
 let applePos = [];
+let snakeSpeed = 1;
+let eatenApples = 0;
 
+const playArea = document.querySelector("body");
 playArea.addEventListener("keydown", arrowPressEventHandler);
-
-function arrowPressEventHandler(e) {
-  let pressedKey = e.code;
-  renderSnake(pressedKey);
-}
 
 const colorSquare = (posY, posX, color) => {
   let elements = document.getElementById("play-field").children;
@@ -20,7 +14,6 @@ const colorSquare = (posY, posX, color) => {
   let xy = x.children[posY];
   xy.style.backgroundColor = color;
 };
-
 
 const createApple = () => {
   if (applePos.length > 0) return;
@@ -34,10 +27,37 @@ const renderApple = () => {
   colorSquare(applePos[1], applePos[0], "green");
 };
 
+const createSnake = () => {
+  if (snakePos.length > 0) return;
+  snakeHeadX = Math.floor(Math.random() * NO_OF_COLUMNS);
+  snakeHeadY = Math.floor(Math.random() * NO_OF_ROWS);
+  snakePos = [
+    [snakeHeadY, snakeHeadX],
+    [snakeHeadY, snakeHeadX + 1],
+  ];
+};
 
-let currentDirection = "ArrowLeft"; //Initial and current snake run direction.
+let currentDirection = "ArrowLeft"; //Initial and current snake direction.
 
-const renderSnake = (runDirection) => {
+const renderSnake = () => {
+  createSnake();
+  let headsNextPos = setSnakeDirection(currentDirection);
+  snakePos.unshift(headsNextPos); //Move over first square ("head").
+  let lastSquare = snakePos.at(-1); //Find arrays last element. ("tail")
+  snakePos.pop(); //Remove last element from array.
+  colorSquare(lastSquare[1], lastSquare[0], "#DAA520"); //Color vacated square back to orange.
+  snakePos.forEach((square) => {
+    colorSquare(square[1], square[0], "#8888");
+  });
+  checkIfEaten();
+};
+
+function arrowPressEventHandler(e) {
+  let pressedKey = e.code;
+  currentDirection = pressedKey;
+}
+
+function setSnakeDirection(runDirection) {
   let headXpos = snakePos[0][1];
   let headYpos = snakePos[0][0];
 
@@ -51,7 +71,10 @@ const renderSnake = (runDirection) => {
     headYpos === 11 ? (headYpos = 0) : (headYpos += 1);
   } else if (runDirection === "ArrowLeft") {
     headXpos === 0 ? (headXpos = 11) : (headXpos -= 1);
-  } else if (runDirection === "ArrowRight") {
+  } else if (
+    runDirection === "ArrowRight" &&
+    currentDirection !== "ArrowLeft"
+  ) {
     headXpos === 11 ? (headXpos = 0) : (headXpos += 1);
   } else if (runDirection === "stop") {
     headXpos = snakePos[0][1];
@@ -59,28 +82,36 @@ const renderSnake = (runDirection) => {
   }
   currentDirection = runDirection;
 
-  snakePos.unshift([headYpos, headXpos]); //Move over first square ("head").
-  let lastSquare = snakePos.at(-1); //Find arrays last element. ("tail")
-  snakePos.pop(); //Remove last element from array.
-  colorSquare(lastSquare[1], lastSquare[0], "#DAA520"); //Color vacated square back to orange.
-  snakePos.forEach((square) => {
-    colorSquare(square[1], square[0], "#8888");
-  });
-  isAppleEaten();
-};
+  let headsNextPos = [headYpos, headXpos];
 
-const isAppleEaten = () => {
+  return headsNextPos;
+}
+
+const checkIfEaten = () => {
   let snakeHead = snakePos[0];
   if (JSON.stringify(snakeHead) === JSON.stringify(applePos)) {
-    applePos = []; //Empty aplle array.
+    applePos = []; //Empty apple array.
     snakePos.push(snakeHead); // Add one link to sneak.
+    eatenApples++;
+    stopGameLoop(gameLoopID); // Stop current loop.
+    snakeSpeed += 0.1; //Increase snake speed.
+    gameLoopID = startGameLoop(snakeSpeed); //Start new loop with increased speed.
   }
+  document.getElementById("score").textContent = `Score: ${eatenApples}`;
 };
 
-//Run Snake on the field.
+//Render snake and apple.
 const run = () => {
   renderApple();
   renderSnake();
 };
 
-setInterval(run, 1000 / 1);
+function startGameLoop(speed) {
+  return setInterval(run, 1000 / speed);
+}
+
+function stopGameLoop(gameLoopID) {
+  window.clearInterval(gameLoopID);
+}
+
+let gameLoopID = startGameLoop(snakeSpeed);
