@@ -4,12 +4,36 @@ let snakePos = [];
 let applePos = [];
 let snakeSpeed = 1;
 let applesCount = 0;
-let snakeDirection = "ArrowLeft"; //Initial and updated snake direction.
+let snakeDirection = "ArrowLeft"; //Snake direction, initial is left.
+let prevSnakeDirection = "ArrowLeft"; //Keep track of previous direction, to prevent snake turning to opposite direction.
 
-const playArea = document.querySelector("body");
-playArea.addEventListener("keydown", arrowPressEventHandler);
+const playField = document.querySelector("body");
+playField.addEventListener("keydown", arrowPressEventHandler);
 
-const colorSquare = (posY, posX, color) => {
+function arrowPressEventHandler(e) {
+  snakeDirection = e.code;
+  //Stop snake turning 180 degrees.
+  if (snakeDirection === "ArrowUp" && prevSnakeDirection === "ArrowDown") {
+    snakeDirection = "ArrowDown";
+  } else if (
+    snakeDirection === "ArrowDown" &&
+    prevSnakeDirection === "ArrowUp"
+  ) {
+    snakeDirection = "ArrowUp";
+  } else if (
+    snakeDirection === "ArrowLeft" &&
+    prevSnakeDirection === "ArrowRight"
+  ) {
+    snakeDirection = "ArrowRight";
+  } else if (
+    snakeDirection === "ArrowRight" &&
+    prevSnakeDirection === "ArrowLeft"
+  ) {
+    snakeDirection = "ArrowLeft";
+  }
+}
+
+const setSquareColor = (posY, posX, color) => {
   let elements = document.getElementById("play-field").children;
   let x = elements.item(posX);
   let xy = x.children[posY];
@@ -20,10 +44,10 @@ const createApple = () => {
   if (applePos.length > 0) return;
   appleX = Math.floor(Math.random() * NO_OF_COLUMNS);
   appleY = Math.floor(Math.random() * NO_OF_ROWS);
+  //If new apple shares squares with snake, rerun createApple()
   for (let i = 0; i < snakePos.length; i++) {
     if (JSON.stringify(snakePos[i]) === JSON.stringify([appleY, appleX])) {
       createApple();
-      return;
     }
   }
   applePos = [appleY, appleX];
@@ -31,7 +55,7 @@ const createApple = () => {
 
 const renderApple = () => {
   createApple();
-  colorSquare(applePos[1], applePos[0], "green");
+  setSquareColor(applePos[1], applePos[0], "green");
 };
 
 const createSnake = () => {
@@ -46,53 +70,41 @@ const createSnake = () => {
 
 const renderSnake = () => {
   createSnake();
-  let headsNextPos = setSnakeDirection(snakeDirection);
+  let headsNextPos = moveHead(snakeDirection);
   snakePos.unshift(headsNextPos); //Move over first square ("head").
   let lastSquare = snakePos.at(-1); //Find arrays last element. ("tail")
   snakePos.pop(); //Remove last element from array.
-  colorSquare(lastSquare[1], lastSquare[0], "#DAA520"); //Color vacated square back to orange.
+  setSquareColor(lastSquare[1], lastSquare[0], "#DAA520"); //Color vacated square back to orange.
   snakePos.forEach((square) => {
-    colorSquare(square[1], square[0], "#8888");
+    setSquareColor(square[1], square[0], "#8888");
   });
-  checkIfEaten();
+  checkApple();
 };
 
-function arrowPressEventHandler(e) {
-  let pressedKey = e.code;
-  snakeDirection = pressedKey;
-}
-
-let prevDirection = snakeDirection;
-function setSnakeDirection(newDirection) {
+function moveHead(snakeDirection) {
   let headXpos = snakePos[0][1];
   let headYpos = snakePos[0][0];
-
-  if (newDirection === "ArrowUp") {
+  if (snakeDirection === "ArrowUp") {
     headYpos === 0 ? (headYpos = 11) : (headYpos -= 1);
-  } else if (newDirection === "ArrowDown") {
+  } else if (snakeDirection === "ArrowDown") {
     headYpos === 11 ? (headYpos = 0) : (headYpos += 1);
-  } else if (newDirection === "ArrowLeft") {
+  } else if (snakeDirection === "ArrowLeft") {
     headXpos === 0 ? (headXpos = 11) : (headXpos -= 1);
-  } else if (newDirection === "ArrowRight" && prevDirection !== "ArrowLeft") {
+  } else if (snakeDirection === "ArrowRight") {
     headXpos === 11 ? (headXpos = 0) : (headXpos += 1);
-  } else if (newDirection === "stop") {
-    headXpos = snakePos[0][1];
-    headYpos = snakePos[0][0];
-  } else {
-    setSnakeDirection(prevDirection);
   }
-
   let headsNextPos = [headYpos, headXpos];
-  prevDirection = newDirection;
+  collisionCheck(headsNextPos);
+  prevSnakeDirection = snakeDirection;
 
   return headsNextPos;
 }
 
-const checkIfEaten = () => {
+const checkApple = () => {
   let snakeHead = snakePos[0];
   if (JSON.stringify(snakeHead) === JSON.stringify(applePos)) {
     applePos = []; //Empty apple array.
-    snakePos.push(snakeHead); // Add one link to front.
+    snakePos.push(snakeHead); // Add one link to snake.
     applesCount++;
     stopGameLoop(gameLoopID); // Stop current loop.
     snakeSpeed += 0.1; //Increase snake speed.
@@ -100,6 +112,14 @@ const checkIfEaten = () => {
   }
   document.getElementById("score").textContent = `Score: ${applesCount}`;
 };
+
+function collisionCheck(headsNextPos) {
+  for (let i = 1; i < snakePos.length; i++) {
+    if (JSON.stringify(snakePos[i]) === JSON.stringify(headsNextPos)) {
+      stopGameLoop(gameLoopID);
+    }
+  }
+}
 
 //Render snake and apple.
 const run = () => {
@@ -115,4 +135,5 @@ function stopGameLoop(gameLoopID) {
   window.clearInterval(gameLoopID);
 }
 
+//Starts game.
 let gameLoopID = startGameLoop(snakeSpeed);
