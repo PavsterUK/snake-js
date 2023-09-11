@@ -7,28 +7,34 @@ let applesCount = 0;
 let snakeDirection = "ArrowLeft"; //Snake direction, initial is left.
 let prevSnakeDirection = "ArrowLeft"; //Keep track of previous direction, to prevent snake turning to opposite direction.
 
-const playField = document.querySelector("body");
-playField.addEventListener("keydown", arrowPressEventHandler);
+const playArea = document.querySelector("body");
+const playField = document.querySelector("#play-field");
+
+function createFieldSquares() {
+  for (let i = 0; i < NO_OF_ROWS; i++) {
+    const row = document.createElement("div");
+    row.classList.add("row", "d-flex", "justify-content-center");
+
+    for (let j = 0; j < NO_OF_COLUMNS; j++) {
+      const col = document.createElement("div");
+      col.classList.add("col", "square");
+      row.appendChild(col);
+    }
+
+    playField.appendChild(row);
+  }
+}
 
 function arrowPressEventHandler(e) {
   snakeDirection = e.code;
   //Stop snake turning 180 degrees.
   if (snakeDirection === "ArrowUp" && prevSnakeDirection === "ArrowDown") {
     snakeDirection = "ArrowDown";
-  } else if (
-    snakeDirection === "ArrowDown" &&
-    prevSnakeDirection === "ArrowUp"
-  ) {
+  } else if (snakeDirection === "ArrowDown" && prevSnakeDirection === "ArrowUp") {
     snakeDirection = "ArrowUp";
-  } else if (
-    snakeDirection === "ArrowLeft" &&
-    prevSnakeDirection === "ArrowRight"
-  ) {
+  } else if (snakeDirection === "ArrowLeft" && prevSnakeDirection === "ArrowRight") {
     snakeDirection = "ArrowRight";
-  } else if (
-    snakeDirection === "ArrowRight" &&
-    prevSnakeDirection === "ArrowLeft"
-  ) {
+  } else if (snakeDirection === "ArrowRight" && prevSnakeDirection === "ArrowLeft") {
     snakeDirection = "ArrowLeft";
   }
 }
@@ -134,6 +140,9 @@ function startGameLoop(speed) {
 function stopGameLoop(gameLoopID) {
   window.clearInterval(gameLoopID);
 }
+
+createFieldSquares();
+playArea.addEventListener("keydown", arrowPressEventHandler);
 
 //Starts game.
 let gameLoopID = startGameLoop(snakeSpeed);
